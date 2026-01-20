@@ -1,229 +1,159 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Учёт смен</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Учёт смен</title>
 
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1f1f1f">
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #0f1115;
+  color: #fff;
+  overflow: hidden;
+}
 
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
-    }
+/* ===== ВИДЕО ФОН ===== */
+video#bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+  pointer-events: none; /* 🔑 КРИТИЧНО ДЛЯ iOS */
+}
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      color: #fff;
-      background: #0e0e0e;
-      overflow-x: hidden;
-    }
+/* затемнение */
+.bg-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,10,15,0.55);
+  z-index: -1;
+}
 
-    /* Видео фон — НЕ ТРОГАЕМ */
-    video.bg {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: -2;
-    }
+/* ===== КОНТЕЙНЕР ===== */
+.container {
+  height: 100vh;
+  overflow-y: auto; /* 🔑 ЧТОБЫ ПОЛЯ НЕ ПРОПАДАЛИ */
+  padding: 20px;
+  box-sizing: border-box;
+}
 
-    /* Затемнение поверх видео */
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.45);
-      backdrop-filter: blur(2px);
-      z-index: -1;
-    }
+/* стекло */
+.card {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
 
-    h2 {
-      text-align: center;
-      font-weight: 500;
-      margin-bottom: 20px;
-      color: #fff;
-    }
+/* элементы */
+select, input, textarea, button {
+  width: 100%;
+  margin-bottom: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  font-size: 16px;
+  background: rgba(255,255,255,0.9);
+}
 
-    .container {
-      max-width: 420px;
-      margin: 60px auto;
-      padding: 24px;
-      border-radius: 22px;
+button {
+  background: linear-gradient(135deg, #5e7cff, #7cf2ff);
+  color: #000;
+  font-weight: 600;
+}
 
-      background: rgba(255,255,255,0.08);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-
-      border: 1px solid rgba(255,255,255,0.18);
-      box-shadow:
-        0 10px 40px rgba(0,0,0,0.45),
-        inset 0 1px 0 rgba(255,255,255,0.08);
-
-      animation: fadeIn 0.6s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    select, input, textarea, button {
-      width: 100%;
-      margin-bottom: 14px;
-      padding: 12px 14px;
-      border-radius: 14px;
-      border: none;
-      outline: none;
-      font-size: 15px;
-    }
-
-    select, input, textarea {
-      background: rgba(255,255,255,0.12);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.25);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
-
-    button {
-      margin-top: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      color: #000;
-      background: linear-gradient(135deg, #ffffff, #d7d7d7);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
-      transition: transform .15s ease, box-shadow .15s ease;
-    }
-
-    button:active {
-      transform: scale(0.97);
-      box-shadow: 0 3px 10px rgba(0,0,0,0.4);
-    }
-
-    .greeting {
-      text-align: center;
-      margin-bottom: 18px;
-      font-size: 18px;
-      font-weight: 500;
-      color: #ffffff;
-    }
-
-    hr {
-      border: none;
-      height: 1px;
-      background: rgba(255,255,255,0.15);
-      margin: 18px 0;
-    }
-  </style>
+/* приветствие */
+#greeting {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+</style>
 </head>
 
 <body>
 
-  <!-- Фон -->
-  <video class="bg" autoplay muted loop playsinline>
-    <source src="bg.mp4" type="video/mp4">
-  </video>
-  <div class="overlay"></div>
+<video id="bg" autoplay muted loop playsinline>
+  <source src="bg.mp4" type="video/mp4">
+</video>
+<div class="bg-overlay"></div>
+
+<div class="container">
 
   <!-- ВХОД -->
-  <div id="login" class="container">
-    <h2>Вход</h2>
+  <div id="login" class="card">
+    <div id="greeting">Дорогой водитель, ни гвоздя, ни жезла!</div>
 
-    <select id="fio"></select>
+    <select id="fio">
+      <option>Атаджанов Оскар Борисович</option>
+      <option>Туртумбетов Руслан Валерьевич</option>
+      <option>Каримов Шокирджон Шарифович</option>
+      <option>Павлов Антон Валерьевич</option>
+      <option>Остаф Сергей</option>
+      <option>Назаров Филипп Сергеевич</option>
+      <option>Балтаев Ботир Камильевич</option>
+      <option>Камилбаев Шахриёр Донияр Угли</option>
+      <option>Бекченов Жавлонбек Ровшонбекович</option>
+      <option>Ямщиков Юрий Сергеевич</option>
+    </select>
+
     <input type="password" id="password" placeholder="Пароль">
     <button onclick="login()">Войти</button>
   </div>
 
   <!-- ФОРМА -->
-  <div id="form" class="container" style="display:none">
-    <div class="greeting" id="greeting"></div>
+  <div id="form" class="card" style="display:none">
+    <div id="userHello"></div>
 
-    <select id="car"></select>
+    <select id="car">
+      <option>Н 175 ТР 198 — Sollers Argo</option>
+      <option>Н 895 ТО 198 — Sollers Argo</option>
+      <option>С 852 МХ 198 — Sollers Argo</option>
+      <option>Н 261 ВР 198 — Газель Некст</option>
+      <option>н 781 ос 198 — Белава 1220R0</option>
+      <option>Т 651 СТ 198 — Лада Вис</option>
+    </select>
 
     <input type="date" id="date">
     <input type="time" id="start">
     <input type="time" id="end">
 
-    <input type="number" id="odo_start" placeholder="Пробег начало">
-    <input type="number" id="odo_end" placeholder="Пробег конец">
+    <input type="number" placeholder="Пробег начало">
+    <input type="number" placeholder="Пробег конец">
+    <input type="number" placeholder="Заправка (л)">
+    <input type="number" placeholder="Парковки">
+    <input type="number" placeholder="Резерв">
 
-    <input type="number" id="fuel" placeholder="Заправка (л)">
-    <input type="number" id="parking" placeholder="Парковки">
-    <input type="number" id="reserve" placeholder="Резерв">
+    <textarea placeholder="Комментарий"></textarea>
 
-    <textarea id="comment" placeholder="Комментарий"></textarea>
-
-    <button onclick="save()">Сохранить</button>
+    <button onclick="alert('Смена сохранена')">Сохранить</button>
   </div>
 
-  <script>
-    /* ====== ДАННЫЕ ====== */
-    const drivers = [
-      "Атаджанов Оскар Борисович",
-      "Туртумбетов Руслан Валерьевич",
-      "Каримов Шокирджон Шарифович",
-      "Павлов Антон Валерьевич",
-      "Остаф Сергей",
-      "Назаров Филипп Сергеевич",
-      "Балтаев Ботир Камильевич",
-      "Камилбаев Шахриёр Донияр Угли",
-      "Бекченов Жавлонбек Ровшонбекович",
-      "Ямщиков Юрий Сергеевич"
-    ];
+</div>
 
-    const cars = [
-      "Н 175 ТР 198 — Sollers Argo",
-      "Н 895 ТО 198 — Sollers Argo",
-      "С 852 МХ 198 — Sollers Argo",
-      "Н 261 ВР 198 — Газель Некст",
-      "н 781 ос 198 — Белава 1220R0",
-      "Т 651 СТ 198 — Лада Вис",
-      "Т 636 СТ 198 — Лада Вис",
-      "Т 553 СТ 198 — Лада Вис",
-      "Т 602 СТ 198 — Лада Вис",
-      "Т 438 СТ 198 — Лада Вис",
-      "Р 208 КУ 198 — Лада Вис"
-    ];
+<script>
+function login() {
+  const name = fio.value.split(" ")[0];
+  document.getElementById("greeting").innerText = "Здравствуйте, " + name + " 👋";
+  document.getElementById("userHello").innerText = "Хорошей смены, " + name + "!";
 
-    drivers.forEach(d => fio.add(new Option(d, d)));
-    cars.forEach(c => car.add(new Option(c, c)));
-
-    /* ====== ЛОГИН ====== */
-    function login() {
-      if (!fio.value || !password.value) {
-        alert("Введите пароль");
-        return;
-      }
-
-      localStorage.fio = fio.value;
-
-      login.style.display = "none";
-      form.style.display = "block";
-
-      const name = fio.value.split(" ")[0];
-      greeting.textContent = `Дорогой ${name}, ни гвоздя ни жезла!`;
-
-      const today = new Date();
-      date.value = today.toISOString().slice(0,10);
-    }
-
-    /* ====== СОХРАНЕНИЕ (локально, без сервера) ====== */
-    function save() {
-      alert("Смена сохранена локально");
-      location.reload();
-    }
-  </script>
+  login.style.display = "none";
+  form.style.display = "block";
+}
+</script>
 
 </body>
 </html>
-
 
 
