@@ -30,7 +30,7 @@ body {
   height: 100%;
   object-fit: cover;
   z-index: -2;
-  pointer-events: none; /* важно для iOS */
+  pointer-events: none;
 }
 
 .overlay {
@@ -61,15 +61,7 @@ h1 {
   font-size: 28px;
   margin: 8px 0 16px;
 }
-h2 {
-  font-size: 20px;
-  margin: 0 0 12px;
-}
-p {
-  margin: 0;
-}
 
-/* 🔹 СТЕКЛЯННОЕ БЕЛОЕ ПРИВЕТСТВИЕ */
 .hello-glass {
   color: #ffffff;
   font-weight: 600;
@@ -91,6 +83,16 @@ input, select, textarea {
 
 textarea { min-height: 80px; }
 
+/* 🔧 ВАЖНО: выравнивание date / time */
+input[type="date"],
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 48px;
+  line-height: 48px;
+  padding: 0 14px;
+}
+
 /* ===== BUTTONS ===== */
 button {
   width: 100%;
@@ -106,54 +108,16 @@ button.secondary {
   background: rgba(15,23,42,0.1);
   color: #0f172a;
 }
-
-/* ===== DASHBOARD ===== */
-.stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.stat {
-  background: rgba(255,255,255,0.6);
-  border-radius: 14px;
-  padding: 14px;
-}
-
-.stat strong {
-  font-size: 18px;
-}
-
-/* ===== MODAL ===== */
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-}
-
-.modal-card {
-  background: white;
-  border-radius: 22px;
-  padding: 24px;
-  text-align: center;
-  max-width: 320px;
-}
 </style>
 </head>
 
 <body>
 
-<!-- VIDEO BACKGROUND -->
 <video class="bg-video" autoplay muted loop playsinline>
   <source src="bg.mp4" type="video/mp4">
 </video>
 <div class="overlay"></div>
 
-<!-- ===== LOGIN ===== -->
 <div id="loginScreen" class="screen">
   <div class="card">
     <h1>Вход</h1>
@@ -163,41 +127,13 @@ button.secondary {
   </div>
 </div>
 
-<!-- ===== DASHBOARD ===== -->
 <div id="dashboardScreen" class="screen" style="display:none">
-  <!-- 👇 ВОТ ОНО: стеклянное белое приветствие -->
   <h1 id="helloText" class="hello-glass"></h1>
-
-  <div class="card">
-    <h2>Сегодня</h2>
-    <div class="stats">
-      <div class="stat">
-        <p>Дата</p>
-        <strong id="todayDate"></strong>
-      </div>
-      <div class="stat">
-        <p>Смен</p>
-        <strong id="shiftCount">0</strong>
-      </div>
-      <div class="stat">
-        <p>Автомобиль</p>
-        <strong id="currentCar">—</strong>
-      </div>
-      <div class="stat">
-        <p>Заполнено</p>
-        <strong id="progress">0%</strong>
-      </div>
-    </div>
-  </div>
-
   <button type="button" onclick="openForm()">Начать смену</button>
 </div>
 
-<!-- ===== FORM ===== -->
 <div id="formScreen" class="screen" style="display:none">
   <div class="card">
-    <h2>Смена</h2>
-
     <select id="carSelect"></select>
     <input type="date" id="date">
     <input type="time" id="start">
@@ -206,7 +142,7 @@ button.secondary {
     <input type="number" id="odoEnd" placeholder="Пробег конец">
     <input type="number" id="fuel" placeholder="Заправка (л)">
     <input type="number" id="parking" placeholder="Парковки">
-    <input type="number" id="reserve" placeholder="Резервные точки">
+    <input type="number" id="reserve" placeholder="Резерв">
     <textarea id="comment" placeholder="Комментарий"></textarea>
 
     <button type="button" onclick="saveShift()">Сохранить</button>
@@ -214,17 +150,7 @@ button.secondary {
   </div>
 </div>
 
-<!-- ===== WELCOME ===== -->
-<div id="welcomeModal" class="modal" style="display:none">
-  <div class="modal-card">
-    <h2>Дорогой водитель 🚗</h2>
-    <p>Ни гвоздя, ни жезла!</p><br>
-    <button type="button" onclick="closeWelcome()">Поехали</button>
-  </div>
-</div>
-
 <script>
-/* ===== DATA ===== */
 const DRIVERS = [
 "Атаджанов Оскар Борисович","Туртумбетов Руслан Валерьевич",
 "Каримов Шокирджон Шарифович","Павлов Антон Валерьевич",
@@ -243,32 +169,18 @@ const CARS = [
 "Р 208 КУ 198 — Лада ВИС"
 ];
 
-/* ===== INIT ===== */
 DRIVERS.forEach(d=>fioSelect.add(new Option(d,d)));
 CARS.forEach(c=>carSelect.add(new Option(c,c)));
 
-date.value = new Date().toISOString().slice(0,10);
-todayDate.textContent = new Date().toLocaleDateString("ru-RU", {
-  day:"numeric", month:"long", year:"numeric"
-});
-
-/* ===== LOGIN ===== */
 loginBtn.onclick = ()=>{
   if(passwordInput.value!==PASSWORD) return alert("Неверный пароль");
   localStorage.fio=fioSelect.value;
   loginScreen.style.display="none";
-  welcomeModal.style.display="flex";
-};
-
-/* ===== WELCOME ===== */
-function closeWelcome(){
-  welcomeModal.style.display="none";
   dashboardScreen.style.display="block";
   const name = localStorage.fio.split(" ")[1] || localStorage.fio;
   helloText.textContent = "Здравствуйте, " + name + " 👋";
-}
+};
 
-/* ===== NAV ===== */
 function openForm(){
   dashboardScreen.style.display="none";
   formScreen.style.display="block";
@@ -277,8 +189,6 @@ function backToDashboard(){
   formScreen.style.display="none";
   dashboardScreen.style.display="block";
 }
-
-/* ===== SAVE ===== */
 function saveShift(){
   alert("Смена сохранена");
   location.reload();
@@ -287,6 +197,7 @@ function saveShift(){
 
 </body>
 </html>
+
 
 
 
