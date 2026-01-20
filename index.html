@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Учёт смен</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+
+<style>
+:root {
+  --text: #0f172a;
+  --sub: #64748b;
+  --glass: rgba(255,255,255,0.72);
+  --border: rgba(255,255,255,0.35);
+  --accent: #0f172a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* ===== VIDEO BACKGROUND ===== */
+.bg-video {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: -1;
+}
+
+/* ===== LAYOUT ===== */
+.screen {
+  min-height: 100vh;
+  padding: 16px;
+}
+
+.card {
+  background: var(--glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+/* ===== TEXT ===== */
+h1 {
+  font-size: 28px;
+  margin: 8px 0 16px;
+}
+h2 {
+  font-size: 20px;
+  margin: 0 0 12px;
+}
+p {
+  margin: 0;
+  color: var(--sub);
+}
+
+/* ===== INPUTS ===== */
+input, select, textarea {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.1);
+  margin-bottom: 12px;
+  background: rgba(255,255,255,0.9);
+}
+
+textarea { min-height: 80px; }
+
+/* ===== BUTTONS ===== */
+button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 16px;
+  border: none;
+  font-size: 16px;
+  background: var(--accent);
+  color: white;
+}
+
+button.secondary {
+  background: rgba(15,23,42,0.1);
+  color: var(--text);
+}
+
+/* ===== DASHBOARD ===== */
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stat {
+  background: rgba(255,255,255,0.6);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.stat strong {
+  font-size: 18px;
+}
+
+/* ===== MODAL ===== */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.modal-card {
+  background: white;
+  border-radius: 22px;
+  padding: 24px;
+  text-align: center;
+  max-width: 320px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- VIDEO BACKGROUND -->
+<video class="bg-video" autoplay muted loop playsinline>
+  <source src="bg.mp4" type="video/mp4">
+</video>
+<div class="overlay"></div>
+
+<!-- ===== LOGIN ===== -->
+<div id="loginScreen" class="screen">
+  <div class="card">
+    <h1>Вход</h1>
+    <select id="fioSelect"></select>
+    <input type="password" id="passwordInput" placeholder="Пароль">
+    <button type="button" id="loginBtn">Войти</button>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="dashboardScreen" class="screen" style="display:none">
+  <h1 id="helloText"></h1>
+
+  <div class="card">
+    <h2>Сегодня</h2>
+    <div class="stats">
+      <div class="stat">
+        <p>Дата</p>
+        <strong id="todayDate"></strong>
+      </div>
+      <div class="stat">
+        <p>Смен</p>
+        <strong id="shiftCount">0</strong>
+      </div>
+      <div class="stat">
+        <p>Автомобиль</p>
+        <strong id="currentCar">—</strong>
+      </div>
+      <div class="stat">
+        <p>Заполнено</p>
+        <strong id="progress">0%</strong>
+      </div>
+    </div>
+  </div>
+
+  <button type="button" onclick="openForm()">Начать смену</button>
+</div>
+
+<!-- ===== FORM ===== -->
+<div id="formScreen" class="screen" style="display:none">
+  <div class="card">
+    <h2>Смена</h2>
+
+    <select id="carSelect"></select>
+    <input type="date" id="date">
+    <input type="time" id="start">
+    <input type="time" id="end">
+    <input type="number" id="odoStart" placeholder="Пробег начало">
+    <input type="number" id="odoEnd" placeholder="Пробег конец">
+    <input type="number" id="fuel" placeholder="Заправка (л)">
+    <input type="number" id="parking" placeholder="Парковки">
+    <input type="number" id="reserve" placeholder="Резервные точки">
+    <textarea id="comment" placeholder="Комментарий"></textarea>
+
+    <button type="button" onclick="saveShift()">Сохранить</button>
+    <button type="button" class="secondary" onclick="backToDashboard()">Назад</button>
+  </div>
+</div>
+
+<!-- ===== WELCOME ===== -->
+<div id="welcomeModal" class="modal" style="display:none">
+  <div class="modal-card">
+    <h2>Дорогой водитель 🚗</h2>
+    <p>Ни гвоздя, ни жезла!</p><br>
+    <button type="button" onclick="closeWelcome()">Поехали</button>
+  </div>
+</div>
+
+<script>
+/* ===== DATA ===== */
+const DRIVERS = [
+"Атаджанов Оскар Борисович","Туртумбетов Руслан Валерьевич",
+"Каримов Шокирджон Шарифович","Павлов Антон Валерьевич",
+"Остаф Сергей","Назаров Филипп Сергеевич",
+"Балтаев Ботир Камильевич","Камилбаев Шахриёр Донияр Угли",
+"Бекченов Жавлонбек Ровшонбекович","Ямщиков Юрий Сергеевич"
+];
+const PASSWORD = "1234";
+
+const CARS = [
+"Н 175 ТР 198 — Sollers Argo","Н 895 ТО 198 — Sollers Argo",
+"С 852 МХ 198 — Sollers Argo","Н 261 ВР 198 — Газель Некст",
+"Н 781 ОС 198 — Белава 1220R0","Т 651 СТ 198 — Лада ВИС",
+"Т 636 СТ 198 — Лада ВИС","Т 553 СТ 198 — Лада ВИС",
+"Т 602 СТ 198 — Лада ВИС","Т 438 СТ 198 — Лада ВИС",
+"Р 208 КУ 198 — Лада ВИС"
+];
+
+/* ===== INIT ===== */
+DRIVERS.forEach(d=>fioSelect.add(new Option(d,d)));
+CARS.forEach(c=>carSelect.add(new Option(c,c)));
+
+date.value = new Date().toISOString().slice(0,10);
+todayDate.textContent = new Date().toLocaleDateString("ru-RU", {
+  day:"numeric", month:"long", year:"numeric"
+});
+
+/* ===== LOGIN ===== */
+loginBtn.onclick = ()=>{
+  if(passwordInput.value!==PASSWORD) return alert("Неверный пароль");
+  localStorage.fio=fioSelect.value;
+  loginScreen.style.display="none";
+  welcomeModal.style.display="flex";
+};
+
+/* ===== WELCOME ===== */
+function closeWelcome(){
+  welcomeModal.style.display="none";
+  dashboardScreen.style.display="block";
+  const name = localStorage.fio.split(" ")[1] || localStorage.fio;
+  helloText.textContent = "Здравствуйте, " + name + " 👋";
+}
+
+/* ===== NAV ===== */
+function openForm(){
+  dashboardScreen.style.display="none";
+  formScreen.style.display="block";
+}
+function backToDashboard(){
+  formScreen.style.display="none";
+  dashboardScreen.style.display="block";
+}
+
+/* ===== SAVE ===== */
+function saveShift(){
+  alert("Смена сохранена");
+  location.reload();
+}
+</script>
+
+</body>
+</html>
+
