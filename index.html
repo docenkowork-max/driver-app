@@ -1,30 +1,29 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Учёт смен</title>
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0f172a">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="theme-color" content="#1f1f1f">
 
   <style>
     * {
       box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
     }
 
     body {
       margin: 0;
       min-height: 100vh;
-      background: #0f172a;
       color: #fff;
+      background: #0e0e0e;
       overflow-x: hidden;
     }
 
-    /* ===== ВИДЕО ФОН ===== */
+    /* Видео фон — НЕ ТРОГАЕМ */
     video.bg {
       position: fixed;
       inset: 0;
@@ -34,243 +33,197 @@
       z-index: -2;
     }
 
+    /* Затемнение поверх видео */
     .overlay {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.55);
+      background: rgba(0,0,0,0.45);
       backdrop-filter: blur(2px);
       z-index: -1;
     }
 
-    /* ===== КАРТОЧКА ===== */
-    .card {
-      max-width: 420px;
-      margin: 32px auto;
-      padding: 24px;
-      border-radius: 24px;
-      background: linear-gradient(
-        135deg,
-        rgba(255,255,255,0.22),
-        rgba(255,255,255,0.08)
-      );
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.35);
-      box-shadow: 0 30px 60px rgba(0,0,0,0.45);
-    }
-
-    h1 {
-      margin: 0 0 8px;
-      font-size: 28px;
-      color: #ffffff;
-      text-shadow: 0 4px 14px rgba(0,0,0,0.6);
-    }
-
-    .subtitle {
-      opacity: 0.85;
+    h2 {
+      text-align: center;
+      font-weight: 500;
       margin-bottom: 20px;
+      color: #fff;
     }
 
-    label {
-      display: block;
-      margin-top: 14px;
-      font-size: 14px;
-      opacity: 0.9;
+    .container {
+      max-width: 420px;
+      margin: 60px auto;
+      padding: 24px;
+      border-radius: 22px;
+
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow:
+        0 10px 40px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+
+      animation: fadeIn 0.6s ease;
     }
 
-    input, select, textarea {
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    select, input, textarea, button {
       width: 100%;
-      margin-top: 6px;
+      margin-bottom: 14px;
       padding: 12px 14px;
       border-radius: 14px;
       border: none;
       outline: none;
-      font-size: 16px;
-      background: rgba(255,255,255,0.9);
-      color: #000;
+      font-size: 15px;
+    }
+
+    select, input, textarea {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.25);
     }
 
     textarea {
-      resize: none;
-      min-height: 70px;
+      resize: vertical;
+      min-height: 80px;
     }
 
     button {
-      width: 100%;
-      margin-top: 22px;
-      padding: 14px;
-      border-radius: 18px;
-      border: none;
-      font-size: 17px;
-      font-weight: 600;
+      margin-top: 6px;
       cursor: pointer;
-      color: #0f172a;
-      background: linear-gradient(135deg, #ffffff, #e5e7eb);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      font-weight: 600;
+      color: #000;
+      background: linear-gradient(135deg, #ffffff, #d7d7d7);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+      transition: transform .15s ease, box-shadow .15s ease;
     }
 
     button:active {
       transform: scale(0.97);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.4);
     }
 
-    /* ===== ИКОНКИ ===== */
-    .icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      background: linear-gradient(
-        135deg,
-        rgba(255,255,255,0.55),
-        rgba(255,255,255,0.15)
-      );
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255,255,255,0.4);
-      box-shadow:
-        inset 0 1px 1px rgba(255,255,255,0.7),
-        0 10px 25px rgba(0,0,0,0.35);
-      position: relative;
-      overflow: hidden;
+    .greeting {
+      text-align: center;
+      margin-bottom: 18px;
+      font-size: 18px;
+      font-weight: 500;
+      color: #ffffff;
     }
 
-    .icon::after {
-      content: "";
-      position: absolute;
-      inset: -50%;
-      background: linear-gradient(
-        120deg,
-        transparent,
-        rgba(255,255,255,0.7),
-        transparent
-      );
-      animation: shine 4s infinite;
-      transform: rotate(25deg);
-    }
-
-    @keyframes shine {
-      0% { transform: translateX(-100%) rotate(25deg); }
-      100% { transform: translateX(100%) rotate(25deg); }
-    }
-
-    .row {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .hidden {
-      display: none;
+    hr {
+      border: none;
+      height: 1px;
+      background: rgba(255,255,255,0.15);
+      margin: 18px 0;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ВИДЕО ФОН -->
+  <!-- Фон -->
   <video class="bg" autoplay muted loop playsinline>
     <source src="bg.mp4" type="video/mp4">
   </video>
   <div class="overlay"></div>
 
   <!-- ВХОД -->
-  <div class="card" id="loginBox">
-    <h1>Добро пожаловать</h1>
-    <div class="subtitle">Дорогой водитель, ни гвоздя, ни жезла!</div>
+  <div id="login" class="container">
+    <h2>Вход</h2>
 
-    <label>Водитель</label>
     <select id="fio"></select>
-
-    <label>Пароль</label>
-    <input type="password" id="password" placeholder="Введите пароль">
-
+    <input type="password" id="password" placeholder="Пароль">
     <button onclick="login()">Войти</button>
   </div>
 
   <!-- ФОРМА -->
-  <div class="card hidden" id="formBox">
-    <h1 id="hello"></h1>
-    <div class="subtitle" id="today"></div>
+  <div id="form" class="container" style="display:none">
+    <div class="greeting" id="greeting"></div>
 
-    <label>Автомобиль</label>
     <select id="car"></select>
 
-    <label>Начало смены</label>
+    <input type="date" id="date">
     <input type="time" id="start">
-
-    <label>Конец смены</label>
     <input type="time" id="end">
 
-    <label>Комментарий</label>
-    <textarea id="comment"></textarea>
+    <input type="number" id="odo_start" placeholder="Пробег начало">
+    <input type="number" id="odo_end" placeholder="Пробег конец">
+
+    <input type="number" id="fuel" placeholder="Заправка (л)">
+    <input type="number" id="parking" placeholder="Парковки">
+    <input type="number" id="reserve" placeholder="Резерв">
+
+    <textarea id="comment" placeholder="Комментарий"></textarea>
 
     <button onclick="save()">Сохранить</button>
   </div>
 
-<script>
-  const drivers = [
-    "Атаджанов Оскар Борисович",
-    "Туртумбетов Руслан Валерьевич",
-    "Каримов Шокирджон Шарифович",
-    "Павлов Антон Валерьевич",
-    "Остаф Сергей",
-    "Назаров Филипп Сергеевич",
-    "Балтаев Ботир Камильевич",
-    "Камилбаев Шахриёр Донияр Угли",
-    "Бекченов Жавлонбек Ровшонбекович",
-    "Ямщиков Юрий Сергеевич"
-  ];
+  <script>
+    /* ====== ДАННЫЕ ====== */
+    const drivers = [
+      "Атаджанов Оскар Борисович",
+      "Туртумбетов Руслан Валерьевич",
+      "Каримов Шокирджон Шарифович",
+      "Павлов Антон Валерьевич",
+      "Остаф Сергей",
+      "Назаров Филипп Сергеевич",
+      "Балтаев Ботир Камильевич",
+      "Камилбаев Шахриёр Донияр Угли",
+      "Бекченов Жавлонбек Ровшонбекович",
+      "Ямщиков Юрий Сергеевич"
+    ];
 
-  const cars = [
-    "Н 175 ТР 198 — Sollers Argo",
-    "Н 895 ТО 198 — Sollers Argo",
-    "С 852 МХ 198 — Sollers Argo",
-    "Н 261 ВР 198 — Газель Некст",
-    "Н 781 ОС 198 — Белава 1220R0",
-    "Т 651 СТ 198 — Лада Вис",
-    "Т 636 СТ 198 — Лада Вис",
-    "Т 553 СТ 198 — Лада Вис",
-    "Т 602 СТ 198 — Лада Вис",
-    "Т 438 СТ 198 — Лада Вис",
-    "Р 208 КУ 198 — Лада Вис"
-  ];
+    const cars = [
+      "Н 175 ТР 198 — Sollers Argo",
+      "Н 895 ТО 198 — Sollers Argo",
+      "С 852 МХ 198 — Sollers Argo",
+      "Н 261 ВР 198 — Газель Некст",
+      "н 781 ос 198 — Белава 1220R0",
+      "Т 651 СТ 198 — Лада Вис",
+      "Т 636 СТ 198 — Лада Вис",
+      "Т 553 СТ 198 — Лада Вис",
+      "Т 602 СТ 198 — Лада Вис",
+      "Т 438 СТ 198 — Лада Вис",
+      "Р 208 КУ 198 — Лада Вис"
+    ];
 
-  const fioSelect = document.getElementById("fio");
-  const carSelect = document.getElementById("car");
+    drivers.forEach(d => fio.add(new Option(d, d)));
+    cars.forEach(c => car.add(new Option(c, c)));
 
-  drivers.forEach(d => fioSelect.add(new Option(d, d)));
-  cars.forEach(c => carSelect.add(new Option(c, c)));
+    /* ====== ЛОГИН ====== */
+    function login() {
+      if (!fio.value || !password.value) {
+        alert("Введите пароль");
+        return;
+      }
 
-  function login() {
-    if (!password.value) {
-      alert("Введите пароль");
-      return;
+      localStorage.fio = fio.value;
+
+      login.style.display = "none";
+      form.style.display = "block";
+
+      const name = fio.value.split(" ")[0];
+      greeting.textContent = `Дорогой ${name}, ни гвоздя ни жезла!`;
+
+      const today = new Date();
+      date.value = today.toISOString().slice(0,10);
     }
 
-    localStorage.driver = fio.value;
-    loginBox.classList.add("hidden");
-    formBox.classList.remove("hidden");
-
-    const name = fio.value.split(" ")[0];
-    hello.textContent = `Здравствуйте, ${name}!`;
-
-    const now = new Date();
-    today.textContent = now.toLocaleDateString("ru-RU", {
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    });
-  }
-
-  function save() {
-    alert("Смена сохранена локально ✔");
-    location.reload();
-  }
-</script>
+    /* ====== СОХРАНЕНИЕ (локально, без сервера) ====== */
+    function save() {
+      alert("Смена сохранена локально");
+      location.reload();
+    }
+  </script>
 
 </body>
 </html>
+
 
 
