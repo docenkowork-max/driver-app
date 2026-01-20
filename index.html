@@ -1,284 +1,276 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Учёт смен</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Учёт смен</title>
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0f172a">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-<style>
-:root {
-  --text: #0f172a;
-  --sub: #64748b;
-  --glass: rgba(255,255,255,0.72);
-  --border: rgba(255,255,255,0.35);
-  --accent: #0f172a;
-}
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
 
-* { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #0f172a;
+      color: #fff;
+      overflow-x: hidden;
+    }
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: var(--text);
-  overflow-x: hidden;
-}
+    /* ===== ВИДЕО ФОН ===== */
+    video.bg {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+    }
 
-/* ===== VIDEO BACKGROUND ===== */
-.bg-video {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: -2;
-}
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(2px);
+      z-index: -1;
+    }
 
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  z-index: -1;
-}
+    /* ===== КАРТОЧКА ===== */
+    .card {
+      max-width: 420px;
+      margin: 32px auto;
+      padding: 24px;
+      border-radius: 24px;
+      background: linear-gradient(
+        135deg,
+        rgba(255,255,255,0.22),
+        rgba(255,255,255,0.08)
+      );
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.35);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.45);
+    }
 
-/* ===== LAYOUT ===== */
-.screen {
-  min-height: 100vh;
-  padding: 16px;
-}
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      color: #ffffff;
+      text-shadow: 0 4px 14px rgba(0,0,0,0.6);
+    }
 
-.card {
-  background: var(--glass);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
+    .subtitle {
+      opacity: 0.85;
+      margin-bottom: 20px;
+    }
 
-/* ===== TEXT ===== */
-h1 {
-  font-size: 28px;
-  margin: 8px 0 16px;
-}
-h2 {
-  font-size: 20px;
-  margin: 0 0 12px;
-}
-p {
-  margin: 0;
-  color: var(--sub);
-}
+    label {
+      display: block;
+      margin-top: 14px;
+      font-size: 14px;
+      opacity: 0.9;
+    }
 
-/* ===== INPUTS ===== */
-input, select, textarea {
-  width: 100%;
-  padding: 14px;
-  font-size: 16px;
-  border-radius: 14px;
-  border: 1px solid rgba(0,0,0,0.1);
-  margin-bottom: 12px;
-  background: rgba(255,255,255,0.9);
-}
+    input, select, textarea {
+      width: 100%;
+      margin-top: 6px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      background: rgba(255,255,255,0.9);
+      color: #000;
+    }
 
-textarea { min-height: 80px; }
+    textarea {
+      resize: none;
+      min-height: 70px;
+    }
 
-/* ===== BUTTONS ===== */
-button {
-  width: 100%;
-  padding: 14px;
-  border-radius: 16px;
-  border: none;
-  font-size: 16px;
-  background: var(--accent);
-  color: white;
-}
+    button {
+      width: 100%;
+      margin-top: 22px;
+      padding: 14px;
+      border-radius: 18px;
+      border: none;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #0f172a;
+      background: linear-gradient(135deg, #ffffff, #e5e7eb);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
 
-button.secondary {
-  background: rgba(15,23,42,0.1);
-  color: var(--text);
-}
+    button:active {
+      transform: scale(0.97);
+    }
 
-/* ===== DASHBOARD ===== */
-.stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
+    /* ===== ИКОНКИ ===== */
+    .icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      background: linear-gradient(
+        135deg,
+        rgba(255,255,255,0.55),
+        rgba(255,255,255,0.15)
+      );
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.4);
+      box-shadow:
+        inset 0 1px 1px rgba(255,255,255,0.7),
+        0 10px 25px rgba(0,0,0,0.35);
+      position: relative;
+      overflow: hidden;
+    }
 
-.stat {
-  background: rgba(255,255,255,0.6);
-  border-radius: 14px;
-  padding: 14px;
-}
+    .icon::after {
+      content: "";
+      position: absolute;
+      inset: -50%;
+      background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255,255,255,0.7),
+        transparent
+      );
+      animation: shine 4s infinite;
+      transform: rotate(25deg);
+    }
 
-.stat strong {
-  font-size: 18px;
-}
+    @keyframes shine {
+      0% { transform: translateX(-100%) rotate(25deg); }
+      100% { transform: translateX(100%) rotate(25deg); }
+    }
 
-/* ===== MODAL ===== */
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-}
+    .row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
 
-.modal-card {
-  background: white;
-  border-radius: 22px;
-  padding: 24px;
-  text-align: center;
-  max-width: 320px;
-}
-</style>
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 
 <body>
 
-<!-- VIDEO BACKGROUND -->
-<video class="bg-video" autoplay muted loop playsinline>
-  <source src="bg.mp4" type="video/mp4">
-</video>
-<div class="overlay"></div>
+  <!-- ВИДЕО ФОН -->
+  <video class="bg" autoplay muted loop playsinline>
+    <source src="bg.mp4" type="video/mp4">
+  </video>
+  <div class="overlay"></div>
 
-<!-- ===== LOGIN ===== -->
-<div id="loginScreen" class="screen">
-  <div class="card">
-    <h1>Вход</h1>
-    <select id="fioSelect"></select>
-    <input type="password" id="passwordInput" placeholder="Пароль">
-    <button type="button" id="loginBtn">Войти</button>
-  </div>
-</div>
+  <!-- ВХОД -->
+  <div class="card" id="loginBox">
+    <h1>Добро пожаловать</h1>
+    <div class="subtitle">Дорогой водитель, ни гвоздя, ни жезла!</div>
 
-<!-- ===== DASHBOARD ===== -->
-<div id="dashboardScreen" class="screen" style="display:none">
-  <h1 id="helloText"></h1>
+    <label>Водитель</label>
+    <select id="fio"></select>
 
-  <div class="card">
-    <h2>Сегодня</h2>
-    <div class="stats">
-      <div class="stat">
-        <p>Дата</p>
-        <strong id="todayDate"></strong>
-      </div>
-      <div class="stat">
-        <p>Смен</p>
-        <strong id="shiftCount">0</strong>
-      </div>
-      <div class="stat">
-        <p>Автомобиль</p>
-        <strong id="currentCar">—</strong>
-      </div>
-      <div class="stat">
-        <p>Заполнено</p>
-        <strong id="progress">0%</strong>
-      </div>
-    </div>
+    <label>Пароль</label>
+    <input type="password" id="password" placeholder="Введите пароль">
+
+    <button onclick="login()">Войти</button>
   </div>
 
-  <button type="button" onclick="openForm()">Начать смену</button>
-</div>
+  <!-- ФОРМА -->
+  <div class="card hidden" id="formBox">
+    <h1 id="hello"></h1>
+    <div class="subtitle" id="today"></div>
 
-<!-- ===== FORM ===== -->
-<div id="formScreen" class="screen" style="display:none">
-  <div class="card">
-    <h2>Смена</h2>
+    <label>Автомобиль</label>
+    <select id="car"></select>
 
-    <select id="carSelect"></select>
-    <input type="date" id="date">
+    <label>Начало смены</label>
     <input type="time" id="start">
+
+    <label>Конец смены</label>
     <input type="time" id="end">
-    <input type="number" id="odoStart" placeholder="Пробег начало">
-    <input type="number" id="odoEnd" placeholder="Пробег конец">
-    <input type="number" id="fuel" placeholder="Заправка (л)">
-    <input type="number" id="parking" placeholder="Парковки">
-    <input type="number" id="reserve" placeholder="Резервные точки">
-    <textarea id="comment" placeholder="Комментарий"></textarea>
 
-    <button type="button" onclick="saveShift()">Сохранить</button>
-    <button type="button" class="secondary" onclick="backToDashboard()">Назад</button>
-  </div>
-</div>
+    <label>Комментарий</label>
+    <textarea id="comment"></textarea>
 
-<!-- ===== WELCOME ===== -->
-<div id="welcomeModal" class="modal" style="display:none">
-  <div class="modal-card">
-    <h2>Дорогой водитель 🚗</h2>
-    <p>Ни гвоздя, ни жезла!</p><br>
-    <button type="button" onclick="closeWelcome()">Поехали</button>
+    <button onclick="save()">Сохранить</button>
   </div>
-</div>
 
 <script>
-/* ===== DATA ===== */
-const DRIVERS = [
-"Атаджанов Оскар Борисович","Туртумбетов Руслан Валерьевич",
-"Каримов Шокирджон Шарифович","Павлов Антон Валерьевич",
-"Остаф Сергей","Назаров Филипп Сергеевич",
-"Балтаев Ботир Камильевич","Камилбаев Шахриёр Донияр Угли",
-"Бекченов Жавлонбек Ровшонбекович","Ямщиков Юрий Сергеевич"
-];
-const PASSWORD = "1234";
+  const drivers = [
+    "Атаджанов Оскар Борисович",
+    "Туртумбетов Руслан Валерьевич",
+    "Каримов Шокирджон Шарифович",
+    "Павлов Антон Валерьевич",
+    "Остаф Сергей",
+    "Назаров Филипп Сергеевич",
+    "Балтаев Ботир Камильевич",
+    "Камилбаев Шахриёр Донияр Угли",
+    "Бекченов Жавлонбек Ровшонбекович",
+    "Ямщиков Юрий Сергеевич"
+  ];
 
-const CARS = [
-"Н 175 ТР 198 — Sollers Argo","Н 895 ТО 198 — Sollers Argo",
-"С 852 МХ 198 — Sollers Argo","Н 261 ВР 198 — Газель Некст",
-"Н 781 ОС 198 — Белава 1220R0","Т 651 СТ 198 — Лада ВИС",
-"Т 636 СТ 198 — Лада ВИС","Т 553 СТ 198 — Лада ВИС",
-"Т 602 СТ 198 — Лада ВИС","Т 438 СТ 198 — Лада ВИС",
-"Р 208 КУ 198 — Лада ВИС"
-];
+  const cars = [
+    "Н 175 ТР 198 — Sollers Argo",
+    "Н 895 ТО 198 — Sollers Argo",
+    "С 852 МХ 198 — Sollers Argo",
+    "Н 261 ВР 198 — Газель Некст",
+    "Н 781 ОС 198 — Белава 1220R0",
+    "Т 651 СТ 198 — Лада Вис",
+    "Т 636 СТ 198 — Лада Вис",
+    "Т 553 СТ 198 — Лада Вис",
+    "Т 602 СТ 198 — Лада Вис",
+    "Т 438 СТ 198 — Лада Вис",
+    "Р 208 КУ 198 — Лада Вис"
+  ];
 
-/* ===== INIT ===== */
-DRIVERS.forEach(d=>fioSelect.add(new Option(d,d)));
-CARS.forEach(c=>carSelect.add(new Option(c,c)));
+  const fioSelect = document.getElementById("fio");
+  const carSelect = document.getElementById("car");
 
-date.value = new Date().toISOString().slice(0,10);
-todayDate.textContent = new Date().toLocaleDateString("ru-RU", {
-  day:"numeric", month:"long", year:"numeric"
-});
+  drivers.forEach(d => fioSelect.add(new Option(d, d)));
+  cars.forEach(c => carSelect.add(new Option(c, c)));
 
-/* ===== LOGIN ===== */
-loginBtn.onclick = ()=>{
-  if(passwordInput.value!==PASSWORD) return alert("Неверный пароль");
-  localStorage.fio=fioSelect.value;
-  loginScreen.style.display="none";
-  welcomeModal.style.display="flex";
-};
+  function login() {
+    if (!password.value) {
+      alert("Введите пароль");
+      return;
+    }
 
-/* ===== WELCOME ===== */
-function closeWelcome(){
-  welcomeModal.style.display="none";
-  dashboardScreen.style.display="block";
-  const name = localStorage.fio.split(" ")[1] || localStorage.fio;
-  helloText.textContent = "Здравствуйте, " + name + " 👋";
-}
+    localStorage.driver = fio.value;
+    loginBox.classList.add("hidden");
+    formBox.classList.remove("hidden");
 
-/* ===== NAV ===== */
-function openForm(){
-  dashboardScreen.style.display="none";
-  formScreen.style.display="block";
-}
-function backToDashboard(){
-  formScreen.style.display="none";
-  dashboardScreen.style.display="block";
-}
+    const name = fio.value.split(" ")[0];
+    hello.textContent = `Здравствуйте, ${name}!`;
 
-/* ===== SAVE ===== */
-function saveShift(){
-  alert("Смена сохранена");
-  location.reload();
-}
+    const now = new Date();
+    today.textContent = now.toLocaleDateString("ru-RU", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+  }
+
+  function save() {
+    alert("Смена сохранена локально ✔");
+    location.reload();
+  }
 </script>
 
 </body>
 </html>
+
 
